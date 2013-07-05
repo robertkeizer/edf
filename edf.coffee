@@ -179,7 +179,7 @@ class EDFFile
 				# Normalize the data against the digital min / digital max.
 				normal = ( raw + _signal.offset ) * _signal.gain
 
-				# Use _signal.sampleRate, p, and seconds to determine the exact time for this sample.
+				# Use _signal.sample_rate, p, and block_time to determine the exact time for this sample.
 				exact_time = block_time + (p/2)/_signal.sample_rate
 
 				# Shove into samples

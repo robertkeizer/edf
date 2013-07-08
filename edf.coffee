@@ -122,6 +122,13 @@ class EDFFile
 
 	get_signal_data: ( signal_index, start, end ) ->
 
+		# If an array is passed in, recurse and return.
+		if Array.isArray signal_index
+			_r = [ ]
+			for _signal_index in signal_index
+				_r.push @get_signal_data _signal_index, start, end
+			return _r
+
 		# Force valid signal index..
 		if not _signals[signal_index]?
 			throw new Error "Invalid Signal index specified."

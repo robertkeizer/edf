@@ -33,8 +33,16 @@ class EDFFile
 		# Open a handle.
 		@_handle	= fs.openSync @edf_path, "r"
 
-		# Populates _signals 
-		@_generate_signals( )
+		# Run through and populate _signals using the specs.
+		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
+
+			_specs = { }
+			
+			# Grab all the particular specs from the signal header..
+			for spec in _signal_spec
+				_specs[spec.name] = @get_signal_item i, spec.name
+
+			_signals.push _specs
 
 	get_header_offset: ( ) ->
 		# 256 + ( number of signals  * 256 )
@@ -94,21 +102,6 @@ class EDFFile
 		k = new Buffer length
 		fs.readSync @_handle, k, 0, length, position
 		k
-
-	_generate_signals: ( ) ->
-		# Internal function that populates _signals.
-		# This is called from the constructor.
-
-		# Iterate over all the signal indexes that are defined in the header..
-		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
-
-			_specs = { }
-			
-			# Grab all the particular specs from the signal header..
-			for spec in _signal_spec
-				_specs[spec.name] = @get_signal_item i, spec.name
-
-			_signals.push _specs
 
 	get_header_item: ( name ) ->
 		# Wraps the _get_header_spec call and _get_buffer_slice into one handy method.

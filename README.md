@@ -22,8 +22,7 @@ for signal_index in [0...num_signals]
 ```
 
 ## License
-See [LICENSE](LICENSE).
+Three clause BSD. See [LICENSE](LICENSE).
 
 ## Thanks
-Original work sponsored by Younes Sleep Technologies.
-http://younessleeptechnologies.com/
+Original work sponsored by [Younes Sleep Technologies](http://younessleeptechnologies.com/).

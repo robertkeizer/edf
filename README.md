@@ -6,6 +6,15 @@ Primarily used for Polysomnographic signals, the EDF file format is multi-channe
 
 ## Usage and Examples
 
+#### Available header information
+
+The following items are available in the EDF header and can be accessed by using ``get_header_item``.
+`` [ version, patient_id, recording_id, start_date, start_time, number_of_bytes, reserved, num_data_records, duration_of_data_record, num_signals_in_data_record ] ``
+
+These items are available using ``get_signal_item``. A signal index must be passed along as the first argument.
+`` [ label, transducer_type, physical_dimensions, physical_min, physical_max, digital_min, digital_max, prefiltering, num_samples_in_data_record ] ``
+
+#### A simple Example
 ```CoffeeScript
 util	= require "util"
 edf		= require "edf"

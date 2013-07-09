@@ -33,7 +33,7 @@ class EDFFile
 		# Open a handle.
 		@_handle	= fs.openSync @edf_path, "r"
 
-		@_header_spec	= { }
+		@_header_item	= { }
 
 		# Run through and populate _signals using the specs.
 		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
@@ -55,23 +55,15 @@ class EDFFile
 
 	_get_header_spec: ( name ) ->
 
-		# If we have a local instance copy of the data already, simply return it.
-		if @_header_spec[name]?
-			return @_header_spec[name]
-
 		position = 0
 
 		# Iterate over all the spec objects.
 		for x in _header_spec
 
-			# Match found. Figure out the position of it, set to local instance
-			# return.
+			# Match found. Figure out the position of it, return.
 			if x.name is name
 				_o		= x
 				_o["position"]	= position
-
-				# Set to local instance so that we can return it faster later on.
-				@_header_spec[name]	= _o
 
 				return _o
 
@@ -116,9 +108,19 @@ class EDFFile
 		k
 
 	get_header_item: ( name ) ->
-		# Wraps the _get_header_spec call and _get_buffer_slice into one handy method.
+
+		# Check local instance cache first.
+		if @_header_item[name]?
+			return @_header_item[name]
+
+		# Get the spec for the given header item.
 		spec = @_get_header_spec name
-		@_get_buffer_slice( spec.length, spec.position ).toString( ).trim( )
+
+		# Set the instance wide cache to be the slice.. 
+		@_header_item[name] = @_get_buffer_slice( spec.length, spec.position ).toString( ).trim( )
+
+		# Return the now cached item.
+		@_header_item[name]
 
 	get_signal_item: ( signal_index, name ) ->
 		# Wraps getting the signal spec and slicing the buffer and returning a string.

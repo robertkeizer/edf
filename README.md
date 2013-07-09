@@ -16,7 +16,7 @@ my_edf = new edf.EDFFile "./path/to/some.edf"
 
 # Get some information about the file.
 file_duration	= my_edf.get_file_duration( )
-num_signals	= my_edf.get_header_item "num_signals_in_data_record"
+num_signals		= my_edf.get_header_item "num_signals_in_data_record"
 
 util.log "The file is " + file_duration + " seconds in length."
 util.log "There are " + num_signals + " signals in this file."

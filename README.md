@@ -25,8 +25,8 @@ util.log "There are " + num_signals + " signals in this file."
 for signal_index in [0..num_signals-1]
 	signal_label	= my_edf.get_signal_item signal_index, "label"
 	sample_rate	= my_edf.get_header_item( "duration_of_data_record" ) / my_edf.get_signal_item( signal_index, "num_samples_in_data_record" )
-	min		= my_edf.get_signal_item signal_index, "physical_min"
-	max		= my_edf.get_signal_item signal_index, "physical_max"
+	min			= my_edf.get_signal_item signal_index, "physical_min"
+	max			= my_edf.get_signal_item signal_index, "physical_max"
 
 	util.log signal_label + " has a sampling rate of " + sample_rate + " Hz."
 	util.log signal_label + " has a min and max of " + min + ": " + max  + "."

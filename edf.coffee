@@ -34,6 +34,7 @@ class EDFFile
 		@_handle	= fs.openSync @edf_path, "r"
 
 		@_header_item	= { }
+		@_signal_item	= { }
 
 		# Run through and populate _signals using the specs.
 		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
@@ -109,7 +110,7 @@ class EDFFile
 
 	get_header_item: ( name ) ->
 
-		# Check local instance cache first.
+		# If we already have a cached copy of it, return it.
 		if @_header_item[name]?
 			return @_header_item[name]
 
@@ -123,9 +124,20 @@ class EDFFile
 		@_header_item[name]
 
 	get_signal_item: ( signal_index, name ) ->
-		# Wraps getting the signal spec and slicing the buffer and returning a string.
-		spec = @_get_signal_spec signal_index, name
-		@_get_buffer_slice( spec.length, spec.position ).toString( ).trim( )
+
+		# Simple mashing of the signal and name.
+		_i = name + "_" + signal_index
+
+		# If we have the cached item, simply return it.
+		if @_signal_item[_i]?
+			return @_signal_item[_i]
+		
+		# Gets the spec object.
+		spec		= @_get_signal_spec signal_index, name
+
+		# Gets the actual item. caches it, returns it.
+		@_signal_item[_i]	= @_get_buffer_slice( spec.length, spec.position ).toString( ).trim( )
+		@_signal_item[_i]
 
 	get_signal_data: ( signal_index, start, end ) ->
 

@@ -33,6 +33,8 @@ class EDFFile
 		# Open a handle.
 		@_handle	= fs.openSync @edf_path, "r"
 
+		@_header_spec	= { }
+
 		# Run through and populate _signals using the specs.
 		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
 
@@ -52,15 +54,25 @@ class EDFFile
 		@get_header_item( "duration_of_data_record" ) * @get_header_item( "num_data_records" )
 
 	_get_header_spec: ( name ) ->
+
+		# If we have a local instance copy of the data already, simply return it.
+		if @_header_spec[name]?
+			return @_header_spec[name]
+
 		position = 0
 
 		# Iterate over all the spec objects.
 		for x in _header_spec
 
-			# Match found. Figure out the position of it, return.
+			# Match found. Figure out the position of it, set to local instance
+			# return.
 			if x.name is name
 				_o		= x
 				_o["position"]	= position
+
+				# Set to local instance so that we can return it faster later on.
+				@_header_spec[name]	= _o
+
 				return _o
 
 			# Not found, increment the position counter with the length

@@ -74,7 +74,6 @@ class EDFFile
 				position += x.length
 
 	_get_signal_spec: ( signal_index, name ) ->
-
 		# Start with a 256 offset since that is the length of the file header - signal header parts.
 		position = 256
 

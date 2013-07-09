@@ -6,6 +6,32 @@ Primarily used for Polysomnographic signals, the EDF file format is multi-channe
 
 ## Usage and Examples
 
+#### A simple Example
+```CoffeeScript
+util    = require "util"
+edf             = require "edf"
+
+# Create a new instance of edf.EDFFile.
+my_edf = new edf.EDFFile "./path/to/some.edf"
+
+# Get some information about the file.
+file_duration   = my_edf.get_file_duration( )
+num_signals     = my_edf.get_header_item "num_signals_in_data_record"
+
+util.log "The file is " + file_duration + " seconds in length."
+util.log "There are " + num_signals + " signals in this file."
+
+# Get some information about the signals.
+for signal_index in [0..num_signals-1]
+        signal_label    = my_edf.get_signal_item signal_index, "label"
+        sample_rate     = my_edf.get_header_item( "duration_of_data_record" ) / my_edf.get_signal_item( signal_index, "num_samples_in_data_record" )
+        min             = my_edf.get_signal_item signal_index, "physical_min"
+        max             = my_edf.get_signal_item signal_index, "physical_max"
+
+        util.log signal_label + " has a sampling rate of " + sample_rate + " Hz."
+        util.log signal_label + " has a min and max of " + min + ": " + max  + "."
+```
+
 #### Available header information
 
 The following items are available in the EDF header and can be accessed by using ``get_header_item``.
@@ -30,22 +56,6 @@ These items are available using ``get_signal_item``. A signal index must be pass
  * digital_max
  * prefiltering
  * num_samples_in_data_record
-
-#### A simple Example
-```CoffeeScript
-util	= require "util"
-edf		= require "edf"
-
-my_edf = new edf.EDFFile "./path/to/file.edf"
-util.log "The file is " + my_edf.get_file_duration( ) + " seconds in length."
-
-num_signals = k.get_header_item "num_signals_in_data_record"
-util.log "There are " + num_signals + " in this file."
-
-for signal_index in [0...num_signals]
-	signal_label = k.get_signal_item signal_index, "label"
-	util.log "Signal Index " + signal_index + " is : " + signal_label
-```
 
 ## License
 Three clause BSD. See [LICENSE](LICENSE).

@@ -8,7 +8,7 @@ Primarily used for Polysomnographic signals, the EDF file format is multi-channe
 
 ```CoffeeScript
 util	= require "util"
-edf	= require "edf"
+edf		= require "edf"
 
 my_edf = new edf.EDFFile "./path/to/file.edf"
 util.log "The file is " + my_edf.get_file_duration( ) + " seconds in length."

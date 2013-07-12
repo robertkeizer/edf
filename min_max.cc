@@ -23,6 +23,36 @@ Handle<Value> min_max( const Arguments& args ){
 		ThrowException( Exception::TypeError( String::New( "2nd argument must be a number." ) ) );
 		return scope.Close( Undefined( ) );
 	}
+
+	Local<Array> input_array = Local<Array>::Cast( args[0] );
+
+	// Iterate through the array and make sure that the elements stored in the array are themselves arrays.
+	for( int k=0; k<input_array->Length( ); k++ ){
+		Local<Object> element_obj = Local<Object>::Cast( input_array->Get( k ) );
+		
+		// Check if input_array->Get(k) contains x and y..
+		if( !element_obj->Has( String::New("x") ) || !element_obj->Has( String::New( "y" ) ) ){
+			ThrowException( Exception::TypeError( String::New( "X and Y must be specified in each array element." ) ) );
+			return scope.Close( Undefined( ) );
+		}
+
+		// Check if y is an array.
+		if( !element_obj->Get( String::New( "y" ) )->IsArray( ) ){
+			ThrowException( Exception::TypeError( String::New( "Y is not an array." ) ) );
+			return scope.Close( Undefined( ) );
+		}
+
+		// Make sure that all the elements of y are numbers..
+		Local<Array> y_array = Local<Array>::Cast( element_obj->Get( String::New( "y" ) ) );
+		for( int m=0; m<y_array->Length(); m++ ){
+			if( !y_array->Get( m )->IsNumber( ) ){
+				ThrowException( Exception::TypeError( String::New( "values of y must be numbers." ) ) );
+				return scope.Close( Undefined( ) );
+			}
+		}
+	}
+
+	// At this point we know the input is valid.
 	
 	return String::New( "Foobar" );
 }

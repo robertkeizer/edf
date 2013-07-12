@@ -24,7 +24,8 @@ Handle<Value> min_max( const Arguments& args ){
 		return scope.Close( Undefined( ) );
 	}
 
-	Local<Array> input_array = Local<Array>::Cast( args[0] );
+	Local<Array>		input_array	= Local<Array>::Cast( args[0] );
+	Local<Integer>		wanted_samples	= Local<Integer>::Cast( args[1] );
 
 	// Iterate through the array and make sure that the elements stored in the array are themselves arrays.
 	for( unsigned int k=0; k<input_array->Length( ); k++ ){
@@ -33,6 +34,12 @@ Handle<Value> min_max( const Arguments& args ){
 		// Check if input_array->Get(k) contains x and y..
 		if( !element_obj->Has( String::New("x") ) || !element_obj->Has( String::New( "y" ) ) ){
 			ThrowException( Exception::TypeError( String::New( "x and y must be specified in each array element." ) ) );
+			return scope.Close( Undefined( ) );
+		}
+
+		// Make sure x in a number..
+		if( !element_obj->Get( String::New( "x" ) )->IsNumber( ) ){
+			ThrowException( Exception::TypeError( String::New( "x must be a number." ) ) );
 			return scope.Close( Undefined( ) );
 		}
 
@@ -52,10 +59,17 @@ Handle<Value> min_max( const Arguments& args ){
 		}
 	}
 
-	// At this point we know the input is valid.
+	// At this point we know the input is valid. Lets start doing the sampling.
+
+	unsigned int block_size = ( input_array->Length( ) / (unsigned int)wanted_samples->Value( ) );
+
+	for( unsigned int k=0; k<input_array->Length( ); k++ ){
+		Local<Object> element_obj = Local<Object>::Cast( input_array->Get( k ) );
+
+	}
 	
-	
-	return String::New( "Foobar" );
+	return Integer::New( block_size );
+	//return String::New( "Foobar" );
 }
 
 void Initialize (Handle<Object> target ){

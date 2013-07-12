@@ -61,10 +61,15 @@ Handle<Value> min_max( const Arguments& args ){
 
 		// Get the slice of data
 		Local<Array> _data = Local<Array>( );
-		for( unsigned p = i*block_size; p<(i*block_size)+block_size; p++ ){
-			_data->Set( p, input_array->Get( p ) );
+
+		unsigned int start_pos	= i*block_size;
+		unsigned int stop_pos	= start_pos+block_size;
+
+		for( unsigned int p=start_pos; p<stop_pos; p++ ){
+			_data->Set( Integer::New(p), input_array->Get( Integer::New(p) ) );
 		}
 
+		/*
 		signed int max = -32766;
 		signed int min = 32767;
 
@@ -98,9 +103,11 @@ Handle<Value> min_max( const Arguments& args ){
 
 		// Push the new object to _r.
 		_r->Set( i, _o );
+		*/
 	}
-	
-	return _r;
+
+	return scope.Close( Undefined( ) );
+	//return _r;
 }
 
 void Initialize (Handle<Object> target ){

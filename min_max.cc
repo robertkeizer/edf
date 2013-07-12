@@ -73,22 +73,42 @@ Handle<Value> min_max( const Arguments& args ){
 		for( unsigned p = i*block_size; p<(i*block_size)+block_size; p++ ){
 			_data->Set( p, input_array->Get( p ) );
 		}
-		
-		// Fill an array with the y objects for all the objects in our data..
+
+		signed int max = -32766;
+		signed int min = 32767;
+
+		// Run through all the values and determine max and min.
 		Local<Array> _values = Local<Array>( );
 		for( unsigned int p=0; p<_data->Length( ); p++ ){
-			_values->Set( p, _data->Get( p )->Get( String::New( "y" ) )->Value( ) );
+			signed int value = _data->Get( p )->Get( String::New( "y" ) )->Value( );
+			if( value > max ){
+				max = value;
+			}
+			if( value < min ){
+				min = value;
+			}
 		}
 
-		// Figure out the max and min.
+		// Determine the new x value.. ( use the midpoint ).
+		signed int new_x = _data->Get( (unsigned int)( buffer_size / 2 ) )->Value( );
+
+		// Define a new object to push to the return.
+		Local<Object> _o = Local<Object>( );
+		_o->Set( String::New( "x" ), new_x );
 		
-		// Determine the new x value.. ( take the midpoint ).
-		
-		// Push to _r.
+		// Define the array that contains max and min.
+		Local<Array> _array	= Local<Array>( 2 );
+		_array[0]		= max;
+		_array[1]		= min;
+
+		// Set the y value of the object.
+		_o->Set( String::New( "y" ), _array );
+
+		// Push the new object to _r.
+		_r->Set( i, _o );
 	}
 	
-	return Integer::New( block_size );
-	//return String::New( "Foobar" );
+	return _r;
 }
 
 void Initialize (Handle<Object> target ){

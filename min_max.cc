@@ -43,19 +43,10 @@ Handle<Value> min_max( const Arguments& args ){
 			return scope.Close( Undefined( ) );
 		}
 
-		// Check if y is an array.
-		if( !element_obj->Get( String::New( "y" ) )->IsArray( ) ){
-			ThrowException( Exception::TypeError( String::New( "y is not an array." ) ) );
+		// Check if y is a number..
+		if( !element_obj->Get( String::New( "y" ) )->IsNumber( ) ){
+			ThrowException( Exception::TypeError( String::New( "y is not a number." ) ) );
 			return scope.Close( Undefined( ) );
-		}
-
-		// Make sure that all the elements of y are numbers..
-		Local<Array> y_array = Local<Array>::Cast( element_obj->Get( String::New( "y" ) ) );
-		for( unsigned int m=0; m<y_array->Length(); m++ ){
-			if( !y_array->Get( m )->IsNumber( ) ){
-				ThrowException( Exception::TypeError( String::New( "values of y must be numbers." ) ) );
-				return scope.Close( Undefined( ) );
-			}
 		}
 	}
 

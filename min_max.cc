@@ -62,10 +62,29 @@ Handle<Value> min_max( const Arguments& args ){
 	// At this point we know the input is valid. Lets start doing the sampling.
 
 	unsigned int block_size = ( input_array->Length( ) / (unsigned int)wanted_samples->Value( ) );
+	unsigned int num_blocks	= ( input_array->Length( ) / block_size );
 
-	for( unsigned int k=0; k<input_array->Length( ); k++ ){
-		Local<Object> element_obj = Local<Object>::Cast( input_array->Get( k ) );
+	Local<Array> _r = Local<Array>( );
+	
+	for( unsigned int i=0; i<num_blocks; i++ ){
 
+		// Get the slice of data
+		Local<Array> _data = Local<Array>( block_size );
+		for( unsigned p = i*block_size; p<(i*block_size)+block_size; p++ ){
+			_data->Set( p, input_array->Get( p ) );
+		}
+		
+		// Fill an array with the y objects for all the objects in our data..
+		Local<Array> _values = Local<Array>( );
+		for( unsigned int p=0; p<_data->Length( ); p++ ){
+			_values->Set( p, _data->Get( p )->Get( String::New( "y" ) )->Value( ) );
+		}
+
+		// Figure out the max and min.
+		
+		// Determine the new x value.. ( take the midpoint ).
+		
+		// Push to _r.
 	}
 	
 	return Integer::New( block_size );

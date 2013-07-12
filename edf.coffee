@@ -214,5 +214,5 @@ class EDFFile
 				p += 2
 			
 		return _samples
-		
+
 exports.EDFFile = EDFFile

@@ -37,10 +37,10 @@ class EDFFile
 		@_signal_item	= { }
 
 		# Run through and populate _signals using the specs.
-		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
+		for i in [0...parseInt(@get_header_item( "num_signals_in_data_record"))]
 
 			_specs = { }
-			
+
 			# Grab all the particular specs from the signal header..
 			for spec in _signal_spec
 				_specs[spec.name] = @get_signal_item i, spec.name

@@ -154,7 +154,7 @@ class EDFFile
 		# Get the block size in bytes.
 		block_size = 0
 		for _signal in _signals
-			block_size += _signal.num_samples_in_data_record * @get_header_item( "duration_of_data_record" ) * 2
+			block_size += _signal.num_samples_in_data_record * 2
 		
 		# Figre out how many blocks we're going to need to read.
 		total_seconds	= ( end - start )

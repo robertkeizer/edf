@@ -37,10 +37,10 @@ class EDFFile
 		@_signal_item	= { }
 
 		# Run through and populate _signals using the specs.
-		for i in [0..parseInt(@get_header_item( "num_signals_in_data_record"))]
+		for i in [0...parseInt(@get_header_item( "num_signals_in_data_record"))]
 
 			_specs = { }
-			
+
 			# Grab all the particular specs from the signal header..
 			for spec in _signal_spec
 				_specs[spec.name] = @get_signal_item i, spec.name
@@ -154,7 +154,7 @@ class EDFFile
 		# Get the block size in bytes.
 		block_size = 0
 		for _signal in _signals
-			block_size += _signal.num_samples_in_data_record * @get_header_item( "duration_of_data_record" ) * 2
+			block_size += _signal.num_samples_in_data_record * 2
 		
 		# Figre out how many blocks we're going to need to read.
 		total_seconds	= ( end - start )
@@ -180,6 +180,9 @@ class EDFFile
 		# Get the signal object. This contains gain and offset.
 		_signal = @_get_signal_obj signal_index
 
+		#Get signal label to check if it is an annotations signal
+		_signal_label = @get_signal_item signal_index, "label"
+
 		_samples = [ ]
 		# Iterate through all the blocks to read.
 		for i in [0...blocks_to_read]
@@ -191,28 +194,94 @@ class EDFFile
 			#	the channel size.. ie number of samples in the data block for our channel multiplied by 2
 			channel_block = @_get_buffer_slice channel_size, base_offset + (i*block_size) + channel_seek
 
-			# This gets the time level of detail down to seconds..
-			block_time	= ( records_to_skip + i ) * @get_header_item( "duration_of_data_record" )
-			
-			# Get all the samples out the channel block we just grabbed
-			p = 0
-			while p < channel_block.length
-
-				# Get the raw data
-				raw = channel_block.readInt16LE p
-
-				# Normalize the data against the digital min / digital max.
-				normal = ( raw + _signal.offset ) * _signal.gain
-
-				# Use _signal.sample_rate, p, and block_time to determine the exact time for this sample.
-				exact_time = block_time + (p/2)/_signal.sample_rate
-
-				# Shove into samples
-				_samples.push { "time": exact_time, "data": normal }
-
-				# We just read 2 bytes, so increment our counter by 2.
-				p += 2
+			#If we have 'EDF annotations' we should parse it differentely
+			#see http://www.edfplus.info/specs/edfplus.html#edfplusannotations
+			if _signal_label == 'EDF Annotations'
+				#parse signal as annotation
+				annotation = @_parse_annotation_signal channel_block, i, records_to_skip;
+				_samples.push(annotation) if annotation
+			else
+				#parse signal with original algoritm
+				_samples = _samples.concat(@_parse_signal_samples channel_block, i, records_to_skip, _signal)
 			
 		return _samples
+
+	_parse_signal_samples: (channel_block, i, records_to_skip, _signal) ->
+		_samples = [ ]
+		# This gets the time level of detail down to seconds..
+		block_time	= ( records_to_skip + i ) * @get_header_item( "duration_of_data_record" )
+
+		# Get all the samples out the channel block we just grabbed
+		p = 0
+
+		while p < channel_block.length
+
+			# Get the raw data
+			raw = channel_block.readInt16LE p
+
+			# Normalize the data against the digital min / digital max.
+			normal = ( raw + _signal.offset ) * _signal.gain
+
+			# Use _signal.sample_rate, p, and block_time to determine the exact time for this sample.
+			exact_time = block_time + (p/2)/_signal.sample_rate
+
+			# Shove into samples
+			_samples.push { "time": exact_time, "data": normal }
+
+			# We just read 2 bytes, so increment our counter by 2.
+			p += 2
+
+		return _samples
+
+	_parse_annotation_signal: (channel_block) ->
+
+		#TAL is +x.yDC4DC4NUL<annotations_list>DC4NUL
+		divider = Buffer.from [0x14, 0x14, 0x0]
+		tail = Buffer.from [0x14, 0x0]
+
+		dividerPosition = channel_block.indexOf divider
+		tailPosition = channel_block.lastIndexOf tail
+
+		#No header or tail means empty annotation (filled with NUL). Just ignore it
+		if dividerPosition < 0 || tailPosition < 0
+			return false
+
+		#Remove TAL header and tail
+		annotations_list = channel_block.slice dividerPosition+3, tailPosition
+
+		#Parse annotations list
+		return @_parse_annotations_list annotations_list
+
+	_parse_annotations_list: (body) ->
+		#Annotation list is <timestamp>DC4<annotation1>DC4<annotation2>DC4...<annotationK>
+		separatorIndex = body.indexOf 0x14
+		#Annotation must contain timestamp
+		if separatorIndex < 0
+			return false
+		timestamp = body.slice(0, separatorIndex)
+		annotations_body = body.slice separatorIndex + 1
+		annotations = []
+		#split annotations body by DC4
+		loop
+			separatorIndex = annotations_body.indexOf 0x14
+			if separatorIndex < 0
+				separatorIndex = annotations_body.length
+			annotation = annotations_body.slice 0, separatorIndex
+			annotations.push annotation.toString()
+			if separatorIndex == annotations_body.length
+				break
+			annotations_body = annotations_body.slice separatorIndex + 1
+
+		#Annotation timestamp can contain duration
+		#if it has,it is +x.yNACz
+		#otherwise it is +x.y and durations is set  0
+		timestampSeparatorIndex = timestamp.indexOf(0x15)
+		if timestampSeparatorIndex > -1
+			offset = parseFloat(timestamp.slice(0, timestampSeparatorIndex).toString())
+			duration = parseFloat(timestamp.slice( timestampSeparatorIndex+1).toString())
+		else
+			offset = parseFloat(timestamp.toString())
+			duration = 0
+		return {"time": offset, "data": annotations, "duration": duration}
 
 exports.EDFFile = EDFFile
